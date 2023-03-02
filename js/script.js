@@ -1,5 +1,7 @@
 // displays profile information
 const profileInfo = document.querySelector(".overview");
+// repo information list
+const repoList = document.querySelector(".repo-list");
 // GitHub username 
 const username = "djnardone";
 
@@ -35,4 +37,26 @@ const showUserInfo = function (data) {
             </div>`;
             
         profileInfo.append(userDiv);
+};
+
+const getRepos = async function () {
+    const res = await fetch (
+        `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`
+    );
+    const repos = await res.json();
+    //console.log(repos);
+    repoInfo(repos);
+};
+
+getRepos();
+
+const repoInfo = function (repos) {
+    for (let result of repos) {
+        const repoName = result.full_name;
+        let li = document.createElement("li");
+        li.classList.add("repos");
+        li.innerHTML = `
+            <h3>${repoName}</h3>`;
+        repoList.append(li);
+    };
 };

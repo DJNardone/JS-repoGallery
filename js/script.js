@@ -1,10 +1,15 @@
 // displays profile information
 const profileInfo = document.querySelector(".overview");
-// repo information list
+// displays repo title list
 const repoList = document.querySelector(".repo-list");
+// UI for repo title list
+const classRepos = document.querySelector(".repos");
+// displays individual repo data
+const displayRepoData = document.querySelector(".repo-data");
 // GitHub username 
 const username = "djnardone";
 
+// API fetch for GitHub user profile
 const getProfile = async function () {
     const res = await fetch (
         `https://api.github.com/users/${username}`
@@ -16,6 +21,7 @@ const getProfile = async function () {
 
 getProfile();
 
+// displays user profile info
 const showUserInfo = function (data) {
         const imageUrl = data.avatar_url;
         const name = data.name;
@@ -39,24 +45,71 @@ const showUserInfo = function (data) {
         profileInfo.append(userDiv);
 };
 
+// API fetch for repo list
 const getRepos = async function () {
     const res = await fetch (
         `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`
     );
-    const repos = await res.json();
-    //console.log(repos);
-    repoInfo(repos);
+    const repoData = await res.json();
+    //console.log(repoData);
+    showRepoInfo(repoData);
 };
 
 getRepos();
 
-const repoInfo = function (repos) {
+// displays list of repos as titled/clickable buttons
+const showRepoInfo = function (repos) {
     for (let result of repos) {
-        const repoName = result.full_name;
+        const showRepoName = result.full_name;
         let li = document.createElement("li");
-        li.classList.add("repos");
+        li.classList.add("repo");
         li.innerHTML = `
-            <h3>${repoName}</h3>`;
+            <h3>${showRepoName}</h3>`;
         repoList.append(li);
     };
+};
+
+// event handler for repo title buttons
+repoList.addEventListener("click", function (e) {
+    if (e.target.matches("h3")) {
+        let repoName = e.target.innerText;
+        //console.log(repoName);
+        getRepoInfo(repoName);
+    };
+});
+
+// API fetch for repo info when title button is clicked
+const getRepoInfo = async function (repoName) {
+    const res = await fetch (
+        `https://api.github.com/repos/${repoName}`
+    );
+    const repoInfo = await res.json();
+    //console.log(repoInfo);
+    const fetchLanguages = await fetch (
+        `https://api.github.com/repos/${repoName}/languages`
+    );
+    const languageData = await fetchLanguages.json();
+    //console.log(languageData);
+    const languages = [];
+        for (let key in languageData) {
+            languages.push(key);
+            //console.log(languages);
+        };    
+    highlightRepoInfo(repoInfo, languages);
+};
+
+// displays specific info when repo-title button is clicked
+const highlightRepoInfo = function (repoInfo, languages) {
+    displayRepoData.innerHTML = "";
+    const infoDiv = document.createElement("div");
+    infoDiv.innerHTML = `
+        <h3>Name: ${repoInfo.name}</h3>
+        <p>Description: ${repoInfo.description}</p>
+        <p>Default Branch: ${repoInfo.default_branch}</p>
+        <p>Languages: ${languages.join(", ")}</p>
+        <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>
+        `;
+    displayRepoData.append(infoDiv);
+    displayRepoData.classList.remove("hide");
+    classRepos.classList.add("hide");
 };

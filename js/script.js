@@ -65,7 +65,7 @@ getRepos();
 const showRepoInfo = function (repos) {
     filterInput.classList.remove("hide");
     for (let result of repos) {
-        const showRepoName = result.full_name;
+        const showRepoName = result.name;
         let li = document.createElement("li");
         li.classList.add("repo");
         li.innerHTML = `
